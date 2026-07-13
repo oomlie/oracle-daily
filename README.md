@@ -14,6 +14,7 @@ zero runtime deps except `sh`, `curl`, `awk`.
 
 ```bash
 # 1. install nix (the package manager) if you don't have it yet.
+#    this is the official installer - it won't mess with your system.
 #    after the install, close and reopen your terminal.
 curl -L https://nixos.org/nix/install | sh
 
@@ -35,14 +36,14 @@ nix run github:oomlie/oracle-daily
 # ORACLE_MODEL=meta-llama/llama-4-scout:free     # pick a different llm. :free = zero cost
 # ORACLE_LOCATION="portland"                     # weather location (default: auto-detect)
 # ORACLE_PLANS="~/my-plans.txt"                  # custom plans file path
-# ORACLE_PERSONALITY=drill                       # voice preset: wise/stoic/drill/chaos/zen/goth/yoda/pirate
+# ORACLE_PERSONALITY=catgirl                     # voice preset: wise/catgirl/doggirl
 # ORACLE_SYSTEM_PROMPT="you are a hype beast"    # full custom personality override
 # ORACLE_MAX_TOKENS=4096                         # longer or shorter responses
 # ORACLE_SYNC_AGE=30                             # how often to re-sync calendar (minutes)
 # ORACLE_CALENDAR="~/my-calendar.txt"            # fallback calendar file if no khal
 
 # try a different personality:
-# ORACLE_PERSONALITY=drill nix run github:oomlie/oracle-daily
+# ORACLE_PERSONALITY=catgirl nix run github:oomlie/oracle-daily
 ```
 
 ## as a flake input
@@ -66,13 +67,13 @@ nix run github:oomlie/oracle-daily
         environment.sessionVariables = {
           # ORACLE_MODEL = "meta-llama/llama-4-scout:free";
           # ORACLE_LOCATION = "portland";
-          # ORACLE_PERSONALITY = "stoic";
+          # ORACLE_PERSONALITY = "catgirl";
           # ORACLE_MAX_TOKENS = "4096";
           # ORACLE_SYNC_AGE = "30";
         };
 
         # or use home-manager for per-user config:
-        # home.sessionVariables = { ORACLE_PERSONALITY = "goth"; };
+        # home.sessionVariables = { ORACLE_PERSONALITY = "doggirl"; };
       }];
     };
   };
@@ -136,23 +137,18 @@ the oracle has built-in personality presets. set `ORACLE_PERSONALITY` to change 
 | preset | vibe |
 |--------|------|
 | `wise` (default) | mystical, poetic, practical. a gentle advisor. |
-| `stoic` | Marcus Aurelius. calm, direct, no sympathy - only clarity. |
-| `drill` | drill sergeant. barks orders. calls you "maggot." |
-| `chaos` | surreal trickster. absurd metaphors, weirdly insightful. |
-| `zen` | Zen master. koans, paradox, speaks like water. |
-| `goth` | brooding oracle. velvet darkness, death, the sublime. |
-| `yoda` | 900-year-old master. inverted syntax, cryptic wisdom. |
-| `pirate` | weathered captain. nautical slang, tasks as treasure. |
+| `catgirl` | lowercase, typos, uwu-speak, :3, nya~. judges you playfully. naps are sacred. |
+| `doggirl` | lowercase, enthusiastic, *tail wags*. loyal, excitable, calls you best friend. |
 
 ```bash
-ORACLE_PERSONALITY=drill nix run github:oomlie/oracle-daily
-ORACLE_PERSONALITY=goth nix run github:oomlie/oracle-daily
+ORACLE_PERSONALITY=catgirl nix run github:oomlie/oracle-daily
+ORACLE_PERSONALITY=doggirl nix run github:oomlie/oracle-daily
 ```
 
 for a fully custom voice, set `ORACLE_SYSTEM_PROMPT` to whatever you want. this overrides all presets:
 
 ```bash
-ORACLE_SYSTEM_PROMPT="You are a hype beast. Every sentence ends with 'lets goooo'." \
+ORACLE_SYSTEM_PROMPT="you are a hype beast. every sentence ends with 'lets goooo'." \
   nix run github:oomlie/oracle-daily
 ```
 
@@ -164,4 +160,4 @@ nix flake check
 
 ## license
 
-WTFPL - do what the fuck you want to.
+mit
