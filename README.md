@@ -14,7 +14,6 @@ zero runtime deps except `sh`, `curl`, `awk`.
 
 ```bash
 # 1. install nix (the package manager) if you don't have it yet.
-#    this is the official installer - it won't mess with your system.
 #    after the install, close and reopen your terminal.
 curl -L https://nixos.org/nix/install | sh
 
