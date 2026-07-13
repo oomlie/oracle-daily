@@ -1,5 +1,5 @@
 #!/usr/bin/env sh
-# test.sh — minimal test suite for oracle.sh
+# test.sh - minimal test suite for oracle.sh
 # run with: nix flake check
 
 set -u
@@ -9,33 +9,33 @@ PASSED=0 FAILED=0
 pass() { PASSED=$((PASSED + 1)); printf '  \033[32m✓\033[0m %s\n' "$1"; }
 fail() { FAILED=$((FAILED + 1)); printf '  \033[31m✗\033[0m %s\n' "$1"; }
 
-# ─── json_escape ─────────────────────────────────────────────────────────────
+# --- json_escape ---
 
 test_json_escape_basic() {
   local got
   got=$(printf '%s' 'hello world' | LC_ALL=C tr -d '\000-\010\013\014\016-\037' | awk '{gsub(/\\/,"\\\\")} {gsub(/"/,"\\\"")} {gsub(/\t/,"\\t")} {gsub(/\r/,"\\r")} NR>1{printf "\\n"} {printf "%s",$0}')
-  [ "$got" = 'hello world' ] && pass "json_escape: basic string" || fail "json_escape: basic string — got '$got'"
+  [ "$got" = 'hello world' ] && pass "json_escape: basic string" || fail "json_escape: basic string - got '$got'"
 }
 
 test_json_escape_quotes() {
   local got
   got=$(printf '%s' 'say "hello"' | LC_ALL=C tr -d '\000-\010\013\014\016-\037' | awk '{gsub(/\\/,"\\\\")} {gsub(/"/,"\\\"")} {gsub(/\t/,"\\t")} {gsub(/\r/,"\\r")} NR>1{printf "\\n"} {printf "%s",$0}')
-  [ "$got" = 'say \"hello\"' ] && pass "json_escape: escaped quotes" || fail "json_escape: escaped quotes — got '$got'"
+  [ "$got" = 'say \"hello\"' ] && pass "json_escape: escaped quotes" || fail "json_escape: escaped quotes - got '$got'"
 }
 
 test_json_escape_newline() {
   local got
   got=$(printf 'line1\nline2' | LC_ALL=C tr -d '\000-\010\013\014\016-\037' | awk '{gsub(/\\/,"\\\\")} {gsub(/"/,"\\\"")} {gsub(/\t/,"\\t")} {gsub(/\r/,"\\r")} NR>1{printf "\\n"} {printf "%s",$0}')
-  [ "$got" = 'line1\nline2' ] && pass "json_escape: newline" || fail "json_escape: newline — got '$got'"
+  [ "$got" = 'line1\nline2' ] && pass "json_escape: newline" || fail "json_escape: newline - got '$got'"
 }
 
 test_json_escape_backslash() {
   local got
   got=$(printf '%s' 'path\to\file' | LC_ALL=C tr -d '\000-\010\013\014\016-\037' | awk '{gsub(/\\/,"\\\\")} {gsub(/"/,"\\\"")} {gsub(/\t/,"\\t")} {gsub(/\r/,"\\r")} NR>1{printf "\\n"} {printf "%s",$0}')
-  [ "$got" = 'path\\to\\file' ] && pass "json_escape: backslash" || fail "json_escape: backslash — got '$got'"
+  [ "$got" = 'path\\to\\file' ] && pass "json_escape: backslash" || fail "json_escape: backslash - got '$got'"
 }
 
-# ─── parse_oracle ────────────────────────────────────────────────────────────
+# --- parse_oracle ---
 
 test_parse_basic() {
   local resp='{"choices":[{"message":{"content":"hello world"}}]}'
@@ -55,7 +55,7 @@ test_parse_basic() {
     gsub(/\\\\/,"\001",o); gsub(/\\n/,"\n",o); gsub(/\\t/,"\t",o); gsub(/\\r/,"\r",o); gsub(/\\"/,"\"",o); gsub(/\001/,"\\",o)
     printf "%s",o
   }')
-  [ "$got" = 'hello world' ] && pass "parse_oracle: basic" || fail "parse_oracle: basic — got '$got'"
+  [ "$got" = 'hello world' ] && pass "parse_oracle: basic" || fail "parse_oracle: basic - got '$got'"
 }
 
 test_parse_with_newlines() {
@@ -76,7 +76,7 @@ test_parse_with_newlines() {
     gsub(/\\\\/,"\001",o); gsub(/\\n/,"\n",o); gsub(/\\t/,"\t",o); gsub(/\\r/,"\r",o); gsub(/\\"/,"\"",o); gsub(/\001/,"\\",o)
     printf "%s",o
   }')
-  [ "$got" = $'line1\nline2\nline3' ] && pass "parse_oracle: newlines" || fail "parse_oracle: newlines — got '$got'"
+  [ "$got" = $'line1\nline2\nline3' ] && pass "parse_oracle: newlines" || fail "parse_oracle: newlines - got '$got'"
 }
 
 test_parse_empty() {
@@ -97,10 +97,10 @@ test_parse_empty() {
     gsub(/\\\\/,"\001",o); gsub(/\\n/,"\n",o); gsub(/\\t/,"\t",o); gsub(/\\r/,"\r",o); gsub(/\\"/,"\"",o); gsub(/\001/,"\\",o)
     printf "%s",o
   }')
-  [ -z "$got" ] && pass "parse_oracle: empty choices" || fail "parse_oracle: empty choices — got '$got'"
+  [ -z "$got" ] && pass "parse_oracle: empty choices" || fail "parse_oracle: empty choices - got '$got'"
 }
 
-# ─── check_error ─────────────────────────────────────────────────────────────
+# --- check_error ---
 
 test_check_error_present() {
   local resp='{"error":{"message":"invalid key","code":401}}'
@@ -113,7 +113,7 @@ test_check_error_present() {
       exit 1
     }
   }')
-  [ "$got" = 'invalid key' ] && pass "check_error: finds error" || fail "check_error: finds error — got '$got'"
+  [ "$got" = 'invalid key' ] && pass "check_error: finds error" || fail "check_error: finds error - got '$got'"
 }
 
 test_check_error_none() {
@@ -127,10 +127,10 @@ test_check_error_none() {
       exit 1
     }
   }') || rc=$?
-  [ -z "$got" ] && [ "$rc" = 0 ] && pass "check_error: no error" || fail "check_error: no error — got '$got' rc=$rc"
+  [ -z "$got" ] && [ "$rc" = 0 ] && pass "check_error: no error" || fail "check_error: no error - got '$got' rc=$rc"
 }
 
-# ─── weather parsing ─────────────────────────────────────────────────────────
+# --- weather parsing ---
 
 test_weather_parsing() {
   local raw="London|☀️|Clear|+20°C|+18°C|↙22km/h|49%|0.0mm|1024hPa|04:58:16|21:13:47|🌑|0"
@@ -157,7 +157,7 @@ test_weather_parsing() {
     || fail "weather parsing: all 13 fields"
 }
 
-# ─── daylight remaining ──────────────────────────────────────────────────────
+# --- daylight remaining ---
 
 test_daylight_remaining() {
   local dl
@@ -185,7 +185,7 @@ test_daylight_remaining_after_sunset() {
   [ "$dl" = "0" ] && pass "daylight_remaining: after sunset = 0" || fail "daylight_remaining: expected 0, got $dl"
 }
 
-# ─── read_plans ──────────────────────────────────────────────────────────────
+# --- read_plans ---
 
 test_read_plans_exists() {
   local tmp got
@@ -200,22 +200,22 @@ test_read_plans_missing() {
   ! cat /nonexistent/plans.txt 2>/dev/null && pass "read_plans: missing file" || fail "read_plans: missing file"
 }
 
-# ─── calendar parsing ────────────────────────────────────────────────────────
+# --- calendar parsing ---
 
 test_calendar_static_file() {
   local tmp got
   tmp=$(mktemp)
-  printf '14:00 — dentist\n16:30 — standup' > "$tmp"
+  printf '14:00 - dentist\n16:30 - standup' > "$tmp"
   got=$(cat "$tmp")
   rm -f "$tmp"
-  [ "$got" = $'14:00 — dentist\n16:30 — standup' ] && pass "calendar: static file" || fail "calendar: static file"
+  [ "$got" = $'14:00 - dentist\n16:30 - standup' ] && pass "calendar: static file" || fail "calendar: static file"
 }
 
 test_calendar_missing() {
   ! cat /nonexistent/calendar.txt 2>/dev/null && pass "calendar: missing file" || fail "calendar: missing file"
 }
 
-# ─── time_context ────────────────────────────────────────────────────────────
+# --- time_context ---
 
 test_time_context() {
   local got
@@ -225,11 +225,11 @@ test_time_context() {
     "$(date +%A)")
   case "$got" in
     'current date: 2026-'*'current time: '*'day of week: '*) pass "time_context: format" ;;
-    *) fail "time_context: format — got '$got'" ;;
+    *) fail "time_context: format - got '$got'" ;;
   esac
 }
 
-# ─── run ─────────────────────────────────────────────────────────────────────
+# --- run ---
 
 printf '\n  oracle-daily test suite (18 tests)\n\n'
 

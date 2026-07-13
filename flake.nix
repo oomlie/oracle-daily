@@ -1,5 +1,5 @@
 {
-  description = "oracle-daily — nix flake. tells you what to do with the rest of your day.";
+  description = "oracle-daily - nix flake. tells you what to do with the rest of your day.";
 
   inputs.nixpkgs.url = "github:NixOS/nixpkgs/nixpkgs-unstable";
 

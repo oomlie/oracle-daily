@@ -14,7 +14,7 @@ zero runtime deps except `sh`, `curl`, `awk`.
 
 ```bash
 # 1. install nix (the package manager) if you don't have it yet.
-#    this is the official installer — it won't mess with your system.
+#    this is the official installer - it won't mess with your system.
 #    after the install, close and reopen your terminal.
 curl -L https://nixos.org/nix/install | sh
 
@@ -31,8 +31,16 @@ echo "- fix that bug
 # 4. consult the oracle
 nix run github:oomlie/oracle-daily
 
-# everything — model, location, plans path, personality, sync frequency —
-# is configurable via environment variables. see the 'env' section below.
+# --- optional configuration (all have sensible defaults) ---
+#
+# ORACLE_MODEL=anthropic/claude-sonnet-4     # pick a different llm
+# ORACLE_LOCATION="portland"                 # weather location (default: auto-detect)
+# ORACLE_PLANS="~/my-plans.txt"              # custom plans file path
+# ORACLE_PERSONALITY=drill                   # voice preset: wise/stoic/drill/chaos/zen/goth/yoda/pirate
+# ORACLE_SYSTEM_PROMPT="you are a hype beast"  # full custom personality override
+# ORACLE_MAX_TOKENS=4096                     # longer or shorter responses
+# ORACLE_SYNC_AGE=30                         # how often to re-sync calendar (minutes)
+# ORACLE_CALENDAR="~/my-calendar.txt"        # fallback calendar file if no khal
 
 # try a different personality:
 # ORACLE_PERSONALITY=drill nix run github:oomlie/oracle-daily
@@ -44,10 +52,28 @@ nix run github:oomlie/oracle-daily
 {
   inputs.oracle-daily.url = "github:oomlie/oracle-daily";
 
-  outputs = { self, nixpkgs, oracle-daily, ... }: {
+  outputs = { self, nixpkgs, oracle-daily, ... }: let
+    # configure the oracle here. these get passed as environment variables.
+    oraclePkg = oracle-daily.packages.x86_64-linux.default.overrideAttrs (old: {
+      # set any env vars you want as defaults for your system
+      # OPENROUTER_API_KEY should NOT go here - set it in secrets
+    });
+  in {
     nixosConfigurations.myhost = nixpkgs.lib.nixosSystem {
       modules = [{
-        environment.systemPackages = [ oracle-daily.packages.x86_64-linux.default ];
+        environment.systemPackages = [ oraclePkg ];
+
+        # set env vars for all users
+        environment.sessionVariables = {
+          # ORACLE_MODEL = "anthropic/claude-sonnet-4";
+          # ORACLE_LOCATION = "portland";
+          # ORACLE_PERSONALITY = "stoic";
+          # ORACLE_MAX_TOKENS = "4096";
+          # ORACLE_SYNC_AGE = "30";
+        };
+
+        # or use home-manager for per-user config:
+        # home.sessionVariables = { ORACLE_PERSONALITY = "goth"; };
       }];
     };
   };
@@ -71,7 +97,7 @@ see [PLAN.md](https://github.com/oomlie/oracle-daily/blob/main/PLAN.md) for plan
 
 | var | default | description |
 |---|---|---|
-| `OPENROUTER_API_KEY` | — | **required.** your openrouter key |
+| `OPENROUTER_API_KEY` | - | **required.** your openrouter key |
 | `ORACLE_MODEL` | `google/gemini-2.5-flash` | any openrouter model |
 | `ORACLE_PLANS` | `~/.config/oracle/plans.txt` | plans file path |
 | `ORACLE_LOCATION` | `auto` | weather location |
@@ -79,14 +105,14 @@ see [PLAN.md](https://github.com/oomlie/oracle-daily/blob/main/PLAN.md) for plan
 | `ORACLE_SYNC_AGE` | `15` | minutes before re-syncing vdirsyncer |
 | `ORACLE_CALENDAR` | `~/.config/oracle/calendar.txt` | fallback calendar file |
 | `ORACLE_PERSONALITY` | `wise` | personality preset (see below) |
-| `ORACLE_SYSTEM_PROMPT` | — | **full override.** set a custom system prompt |
+| `ORACLE_SYSTEM_PROMPT` | - | **full override.** set a custom system prompt |
 
 pass a custom plans file: `oracle ~/my-plans.txt`
 
 ## calendar
 
 if `khal` is on your `$PATH`, the oracle automatically:
-1. runs `vdirsyncer sync` (if available) — but only if the last sync was > 15 minutes ago
+1. runs `vdirsyncer sync` (if available) - but only if the last sync was > 15 minutes ago
 2. lists today's events via `khal list today today`
 
 no cron job needed. the oracle syncs on demand.
@@ -111,7 +137,7 @@ the oracle has built-in personality presets. set `ORACLE_PERSONALITY` to change 
 | preset | vibe |
 |--------|------|
 | `wise` (default) | mystical, poetic, practical. a gentle advisor. |
-| `stoic` | Marcus Aurelius. calm, direct, no sympathy — only clarity. |
+| `stoic` | Marcus Aurelius. calm, direct, no sympathy - only clarity. |
 | `drill` | drill sergeant. barks orders. calls you "maggot." |
 | `chaos` | surreal trickster. absurd metaphors, weirdly insightful. |
 | `zen` | Zen master. koans, paradox, speaks like water. |
@@ -139,4 +165,4 @@ nix flake check
 
 ## license
 
-WTFPL — do what the fuck you want to.
+WTFPL - do what the fuck you want to.
