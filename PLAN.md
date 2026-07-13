@@ -12,27 +12,30 @@
 
 ## tier 1 — highest impact, simplest integration
 
-### [~] calendar remaining events
+### [x] calendar remaining events
 **what:** today's upcoming events from any caldav/google/ics source
-**integration:** cron job exports `~/.config/oracle/calendar.txt` every 15min. oracle reads it like plans.
-**effort:** low (if you already have calendar cli access)
-**tooling:** `vdirsyncer`, `khal`, or a 10-line python script using google calendar API
+**integration:** if `khal` is installed, oracle auto-syncs via `vdirsyncer` (if available) then lists today's events. falls back to reading `~/.config/oracle/calendar.txt`.
+**effort:** done — zero-config if you already use khal+vdirsyncer
+**tooling:** `vdirsyncer` + `khal` (nix: `nix-env -iA nixpkgs.khal nixpkgs.vdirsyncer`)
 **oracle impact:** "you have a meeting at 3pm — block deep work before then"
 
 ```bash
-# ~/.config/oracle/calendar.txt (auto-generated)
+# khal lists your synced calendars automatically
+# no cron job needed — the oracle syncs on demand
+
+# fallback: manual calendar file
 14:00 — dentist appointment
 16:30 — standup
 19:00 — dinner with sam
 ```
 
-### [~] open task count
+### [x] open task count
 **what:** number of pending tasks from taskwarrior, todo.txt, or simple file
 **integration:** if `task` is installed, oracle already reads pending/overdue/urgent counts.
 **effort:** done (taskwarrior integration is live)
 **oracle impact:** "7 tasks pending, 2 overdue — tackle the oldest first"
 
-### [~] sunset / daylight countdown
+### [x] sunset / daylight countdown
 **what:** hours of daylight remaining
 **integration:** computed from wttr.in sunrise/sunset. live in oracle.sh.
 **effort:** done

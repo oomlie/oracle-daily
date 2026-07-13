@@ -200,6 +200,21 @@ test_read_plans_missing() {
   ! cat /nonexistent/plans.txt 2>/dev/null && pass "read_plans: missing file" || fail "read_plans: missing file"
 }
 
+# ─── calendar parsing ────────────────────────────────────────────────────────
+
+test_calendar_static_file() {
+  local tmp got
+  tmp=$(mktemp)
+  printf '14:00 — dentist\n16:30 — standup' > "$tmp"
+  got=$(cat "$tmp")
+  rm -f "$tmp"
+  [ "$got" = $'14:00 — dentist\n16:30 — standup' ] && pass "calendar: static file" || fail "calendar: static file"
+}
+
+test_calendar_missing() {
+  ! cat /nonexistent/calendar.txt 2>/dev/null && pass "calendar: missing file" || fail "calendar: missing file"
+}
+
 # ─── time_context ────────────────────────────────────────────────────────────
 
 test_time_context() {
@@ -216,7 +231,7 @@ test_time_context() {
 
 # ─── run ─────────────────────────────────────────────────────────────────────
 
-printf '\n  oracle-daily test suite\n\n'
+printf '\n  oracle-daily test suite (18 tests)\n\n'
 
 test_json_escape_basic
 test_json_escape_quotes
@@ -232,6 +247,8 @@ test_daylight_remaining
 test_daylight_remaining_after_sunset
 test_read_plans_exists
 test_read_plans_missing
+test_calendar_static_file
+test_calendar_missing
 test_time_context
 
 printf '\n  %d passed, %d failed\n\n' "$PASSED" "$FAILED"

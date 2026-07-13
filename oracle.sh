@@ -10,6 +10,7 @@ OPENROUTER_API_KEY="${OPENROUTER_API_KEY:-}"
 MODEL="${ORACLE_MODEL:-google/gemini-2.5-flash}"
 LOCATION="${ORACLE_LOCATION:-auto}"
 MAX_TOKENS="${ORACLE_MAX_TOKENS:-2048}"
+ORACLE_SYNC_AGE="${ORACLE_SYNC_AGE:-15}"
 
 json_escape() {
   printf '%s' "$1" | LC_ALL=C tr -d '\000-\010\013\014\016-\037' | awk '{gsub(/\\/,"\\\\")} {gsub(/"/,"\\\"")} {gsub(/\t/,"\\t")} {gsub(/\r/,"\\r")} NR>1{printf "\\n"} {printf "%s",$0}'
@@ -49,6 +50,45 @@ fetch_taskwarrior() {
   overdue=$(task +OVERDUE count 2>/dev/null)
   urgent=$(task urgency \> 10.0 count 2>/dev/null)
   printf 'pending:%s\noverdue:%s\nurgent(>10):%s' "$pending" "$overdue" "$urgent"
+}
+
+# ─── calendar integration (khal + vdirsyncer) ────────────────────────────────
+
+# sync age threshold in minutes
+ORACLE_SYNC_AGE="${ORACLE_SYNC_AGE:-15}"
+
+_vdirsyncer_sync() {
+  command -v vdirsyncer >/dev/null 2>&1 || return 1
+  local marker="$HOME/.config/oracle/.last-vdirsync"
+  local age=999
+  if [ -f "$marker" ]; then
+    # portable mtime check: find -mmin works on both linux and macos
+    if find "$marker" -mmin +"$ORACLE_SYNC_AGE" >/dev/null 2>&1; then
+      age=$((ORACLE_SYNC_AGE + 1))
+    else
+      age=0
+    fi
+  fi
+  if [ "$age" -gt "$ORACLE_SYNC_AGE" ]; then
+    vdirsyncer sync >/dev/null 2>&1 && touch "$marker" || true
+  fi
+}
+
+fetch_calendar() {
+  # prefer khal (with auto-sync via vdirsyncer)
+  if command -v khal >/dev/null 2>&1; then
+    _vdirsyncer_sync
+    khal list today today --format "{start-time} — {title}" 2>/dev/null && return 0
+  fi
+
+  # fallback: static calendar file
+  local f="${ORACLE_CALENDAR:-$HOME/.config/oracle/calendar.txt}"
+  if [ -f "$f" ]; then
+    cat "$f"
+    return 0
+  fi
+
+  return 1
 }
 
 # ─── read plans file ─────────────────────────────────────────────────────────
@@ -154,6 +194,7 @@ NOW_EPOCH=$(date +%s)
 WEATHER_RAW=$(fetch_weather "$LOCATION") || WEATHER_RAW="unavailable"
 PLANS=$(read_plans "$PLANS_FILE") || PLANS="no plans on file"
 TASKS=$(fetch_taskwarrior) || TASKS="taskwarrior not available"
+CALENDAR=$(fetch_calendar) || CALENDAR="no calendar events"
 
 # ─── parse weather fields ────────────────────────────────────────────────────
 
@@ -206,6 +247,7 @@ You are practical but poetic. You consider:
 - The weather (temperature, wind, UV, precipitation) and how it affects outdoor vs indoor activities
 - Daylight remaining — urgent if only 1-2 hours left
 - Moon phase for subtle mystical flavor
+- Upcoming calendar events — block time before meetings, use gaps for deep work
 - The person's existing plans and commitments
 - Pending tasks — if many are urgent/overdue, that shapes priorities
 - The time of day (morning, afternoon, evening) and what makes sense energetically
@@ -214,11 +256,12 @@ You are practical but poetic. You consider:
 Your output format:
 1. A brief, evocative reading (2-3 sentences setting the mood)
 2. Conditions (weather + daylight + moon, woven into 2-3 sentences)
-3. Primary Focus (the one most important thing to do)
-4. Secondary Actions (2-3 other worthwhile things)
-5. Task Check (reference pending/urgent/overdue tasks if available)
-6. Energy Check (a note about pacing — when to push, when to rest)
-7. A one-line closing blessing/proverb
+3. Calendar Check (upcoming events and how they shape the day's flow)
+4. Primary Focus (the one most important thing to do)
+5. Secondary Actions (2-3 other worthwhile things)
+6. Task Check (reference pending/urgent/overdue tasks if available)
+7. Energy Check (a note about pacing — when to push, when to rest)
+8. A one-line closing blessing/proverb
 
 Keep it concise but meaningful. Total output: 150-300 words. Use markdown formatting."
 
@@ -227,6 +270,9 @@ ${DAYLIGHT_CTX}
 
 WEATHER:
 ${WEATHER_CTX}
+
+CALENDAR:
+${CALENDAR}
 
 TASKS:
 ${TASKS}
