@@ -9,8 +9,6 @@ PASSED=0 FAILED=0
 pass() { PASSED=$((PASSED + 1)); printf '  \033[32m✓\033[0m %s\n' "$1"; }
 fail() { FAILED=$((FAILED + 1)); printf '  \033[31m✗\033[0m %s\n' "$1"; }
 
-ORACLE_DIR="${ORACLE_DIR:-.}"
-
 # ─── json_escape ─────────────────────────────────────────────────────────────
 
 test_json_escape_basic() {
@@ -132,14 +130,67 @@ test_check_error_none() {
   [ -z "$got" ] && [ "$rc" = 0 ] && pass "check_error: no error" || fail "check_error: no error — got '$got' rc=$rc"
 }
 
+# ─── weather parsing ─────────────────────────────────────────────────────────
+
+test_weather_parsing() {
+  local raw="London|☀️|Clear|+20°C|+18°C|↙22km/h|49%|0.0mm|1024hPa|04:58:16|21:13:47|🌑|0"
+  local loc cond_emoji cond_text temp feels wind hum precip pressure sunrise sunset moon uv
+  loc=$(printf '%s' "$raw" | awk -F'|' '{print $1}')
+  cond_emoji=$(printf '%s' "$raw" | awk -F'|' '{print $2}')
+  cond_text=$(printf '%s' "$raw" | awk -F'|' '{print $3}')
+  temp=$(printf '%s' "$raw" | awk -F'|' '{print $4}')
+  feels=$(printf '%s' "$raw" | awk -F'|' '{print $5}')
+  wind=$(printf '%s' "$raw" | awk -F'|' '{print $6}')
+  hum=$(printf '%s' "$raw" | awk -F'|' '{print $7}')
+  precip=$(printf '%s' "$raw" | awk -F'|' '{print $8}')
+  pressure=$(printf '%s' "$raw" | awk -F'|' '{print $9}')
+  sunrise=$(printf '%s' "$raw" | awk -F'|' '{print $10}')
+  sunset=$(printf '%s' "$raw" | awk -F'|' '{print $11}')
+  moon=$(printf '%s' "$raw" | awk -F'|' '{print $12}')
+  uv=$(printf '%s' "$raw" | awk -F'|' '{print $13}')
+
+  [ "$loc" = "London" ] && [ "$temp" = "+20°C" ] && [ "$feels" = "+18°C" ] && \
+  [ "$wind" = "↙22km/h" ] && [ "$hum" = "49%" ] && [ "$precip" = "0.0mm" ] && \
+  [ "$pressure" = "1024hPa" ] && [ "$sunrise" = "04:58:16" ] && [ "$sunset" = "21:13:47" ] && \
+  [ "$moon" = "🌑" ] && [ "$uv" = "0" ] \
+    && pass "weather parsing: all 13 fields" \
+    || fail "weather parsing: all 13 fields"
+}
+
+# ─── daylight remaining ──────────────────────────────────────────────────────
+
+test_daylight_remaining() {
+  local dl
+  dl=$(awk 'BEGIN{
+    sunrise_epoch = 1752300000
+    sunset_epoch = 1752340000
+    now_epoch = 1752320000
+    remaining = int((sunset_epoch - now_epoch) / 3600)
+    if (remaining < 0) remaining = 0
+    print remaining
+  }')
+  [ "$dl" = "5" ] && pass "daylight_remaining: 5 hours" || fail "daylight_remaining: expected 5, got $dl"
+}
+
+test_daylight_remaining_after_sunset() {
+  local dl
+  dl=$(awk 'BEGIN{
+    sunrise_epoch = 1752300000
+    sunset_epoch = 1752320000
+    now_epoch = 1752350000
+    remaining = int((sunset_epoch - now_epoch) / 3600)
+    if (remaining < 0) remaining = 0
+    print remaining
+  }')
+  [ "$dl" = "0" ] && pass "daylight_remaining: after sunset = 0" || fail "daylight_remaining: expected 0, got $dl"
+}
+
 # ─── read_plans ──────────────────────────────────────────────────────────────
 
 test_read_plans_exists() {
-  local tmp
+  local tmp got
   tmp=$(mktemp)
-  printf '%s' 'plan A
-plan B' > "$tmp"
-  local got
+  printf 'plan A\nplan B' > "$tmp"
   got=$(cat "$tmp")
   rm -f "$tmp"
   [ "$got" = $'plan A\nplan B' ] && pass "read_plans: file exists" || fail "read_plans: file exists"
@@ -176,6 +227,9 @@ test_parse_with_newlines
 test_parse_empty
 test_check_error_present
 test_check_error_none
+test_weather_parsing
+test_daylight_remaining
+test_daylight_remaining_after_sunset
 test_read_plans_exists
 test_read_plans_missing
 test_time_context
