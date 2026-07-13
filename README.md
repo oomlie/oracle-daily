@@ -31,8 +31,11 @@ echo "- fix that bug
 # 4. consult the oracle
 nix run github:oomlie/oracle-daily
 
-# everything — model, location, plans path, sync frequency — is configurable
-# via environment variables. see the 'env' section below.
+# everything — model, location, plans path, personality, sync frequency —
+# is configurable via environment variables. see the 'env' section below.
+
+# try a different personality:
+# ORACLE_PERSONALITY=drill nix run github:oomlie/oracle-daily
 ```
 
 ## as a flake input
@@ -75,6 +78,8 @@ see [PLAN.md](https://github.com/oomlie/oracle-daily/blob/main/PLAN.md) for plan
 | `ORACLE_MAX_TOKENS` | `2048` | max response length |
 | `ORACLE_SYNC_AGE` | `15` | minutes before re-syncing vdirsyncer |
 | `ORACLE_CALENDAR` | `~/.config/oracle/calendar.txt` | fallback calendar file |
+| `ORACLE_PERSONALITY` | `wise` | personality preset (see below) |
+| `ORACLE_SYSTEM_PROMPT` | — | **full override.** set a custom system prompt |
 
 pass a custom plans file: `oracle ~/my-plans.txt`
 
@@ -98,6 +103,33 @@ if `task` is on your `$PATH`, the oracle automatically includes:
 - urgent task count (urgency > 10)
 
 this gives the oracle a sense of your workload and helps it prioritize.
+
+## personality
+
+the oracle has built-in personality presets. set `ORACLE_PERSONALITY` to change the voice:
+
+| preset | vibe |
+|--------|------|
+| `wise` (default) | mystical, poetic, practical. a gentle advisor. |
+| `stoic` | Marcus Aurelius. calm, direct, no sympathy — only clarity. |
+| `drill` | drill sergeant. barks orders. calls you "maggot." |
+| `chaos` | surreal trickster. absurd metaphors, weirdly insightful. |
+| `zen` | Zen master. koans, paradox, speaks like water. |
+| `goth` | brooding oracle. velvet darkness, death, the sublime. |
+| `yoda` | 900-year-old master. inverted syntax, cryptic wisdom. |
+| `pirate` | weathered captain. nautical slang, tasks as treasure. |
+
+```bash
+ORACLE_PERSONALITY=drill nix run github:oomlie/oracle-daily
+ORACLE_PERSONALITY=goth nix run github:oomlie/oracle-daily
+```
+
+for a fully custom voice, set `ORACLE_SYSTEM_PROMPT` to whatever you want. this overrides all presets:
+
+```bash
+ORACLE_SYSTEM_PROMPT="You are a hype beast. Every sentence ends with 'lets goooo'." \
+  nix run github:oomlie/oracle-daily
+```
 
 ## test
 
