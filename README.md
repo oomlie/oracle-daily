@@ -33,14 +33,14 @@ nix run github:oomlie/oracle-daily
 
 # --- optional configuration (all have sensible defaults) ---
 #
-# ORACLE_MODEL=anthropic/claude-sonnet-4     # pick a different llm
-# ORACLE_LOCATION="portland"                 # weather location (default: auto-detect)
-# ORACLE_PLANS="~/my-plans.txt"              # custom plans file path
-# ORACLE_PERSONALITY=drill                   # voice preset: wise/stoic/drill/chaos/zen/goth/yoda/pirate
-# ORACLE_SYSTEM_PROMPT="you are a hype beast"  # full custom personality override
-# ORACLE_MAX_TOKENS=4096                     # longer or shorter responses
-# ORACLE_SYNC_AGE=30                         # how often to re-sync calendar (minutes)
-# ORACLE_CALENDAR="~/my-calendar.txt"        # fallback calendar file if no khal
+# ORACLE_MODEL=meta-llama/llama-4-scout:free     # pick a different llm. :free = zero cost
+# ORACLE_LOCATION="portland"                     # weather location (default: auto-detect)
+# ORACLE_PLANS="~/my-plans.txt"                  # custom plans file path
+# ORACLE_PERSONALITY=drill                       # voice preset: wise/stoic/drill/chaos/zen/goth/yoda/pirate
+# ORACLE_SYSTEM_PROMPT="you are a hype beast"    # full custom personality override
+# ORACLE_MAX_TOKENS=4096                         # longer or shorter responses
+# ORACLE_SYNC_AGE=30                             # how often to re-sync calendar (minutes)
+# ORACLE_CALENDAR="~/my-calendar.txt"            # fallback calendar file if no khal
 
 # try a different personality:
 # ORACLE_PERSONALITY=drill nix run github:oomlie/oracle-daily
@@ -65,7 +65,7 @@ nix run github:oomlie/oracle-daily
 
         # set env vars for all users
         environment.sessionVariables = {
-          # ORACLE_MODEL = "anthropic/claude-sonnet-4";
+          # ORACLE_MODEL = "meta-llama/llama-4-scout:free";
           # ORACLE_LOCATION = "portland";
           # ORACLE_PERSONALITY = "stoic";
           # ORACLE_MAX_TOKENS = "4096";
@@ -98,7 +98,7 @@ see [PLAN.md](https://github.com/oomlie/oracle-daily/blob/main/PLAN.md) for plan
 | var | default | description |
 |---|---|---|
 | `OPENROUTER_API_KEY` | - | **required.** your openrouter key |
-| `ORACLE_MODEL` | `google/gemini-2.5-flash` | any openrouter model |
+| `ORACLE_MODEL` | `google/gemini-2.0-flash-exp:free` | any openrouter model. `:free` suffix = zero cost |
 | `ORACLE_PLANS` | `~/.config/oracle/plans.txt` | plans file path |
 | `ORACLE_LOCATION` | `auto` | weather location |
 | `ORACLE_MAX_TOKENS` | `2048` | max response length |

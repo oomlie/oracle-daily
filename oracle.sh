@@ -7,7 +7,7 @@ set -u
 
 PLANS_FILE="${1:-${ORACLE_PLANS:-$HOME/.config/oracle/plans.txt}}"
 OPENROUTER_API_KEY="${OPENROUTER_API_KEY:-}"
-MODEL="${ORACLE_MODEL:-google/gemini-2.5-flash}"
+MODEL="${ORACLE_MODEL:-google/gemini-2.0-flash-exp:free}"
 LOCATION="${ORACLE_LOCATION:-auto}"
 MAX_TOKENS="${ORACLE_MAX_TOKENS:-2048}"
 ORACLE_SYNC_AGE="${ORACLE_SYNC_AGE:-15}"
