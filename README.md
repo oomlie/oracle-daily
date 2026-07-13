@@ -13,10 +13,26 @@ zero runtime deps except `sh`, `curl`, `awk`.
 ## quickstart
 
 ```bash
+# 1. install nix (the package manager) if you don't have it yet.
+#    this is the official installer — it won't mess with your system.
+#    after the install, close and reopen your terminal.
+curl -L https://nixos.org/nix/install | sh
+
+# 2. get an openrouter key (free to sign up, pay-as-you-go)
+#    https://openrouter.ai/settings/keys
 export OPENROUTER_API_KEY="sk-or-v1-..."
+
+# 3. write your plans for the day
+mkdir -p ~/.config/oracle
 echo "- fix that bug
-- eat something green" > ~/.config/oracle/plans.txt
+- eat something green
+- touch grass" > ~/.config/oracle/plans.txt
+
+# 4. consult the oracle
 nix run github:oomlie/oracle-daily
+
+# everything — model, location, plans path, sync frequency — is configurable
+# via environment variables. see the 'env' section below.
 ```
 
 ## as a flake input
@@ -91,4 +107,4 @@ nix flake check
 
 ## license
 
-mit
+WTFPL — do what the fuck you want to.
